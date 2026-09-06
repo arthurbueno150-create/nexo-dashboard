@@ -116,4 +116,3 @@ Os testes automatizados cobrem formatos numéricos, datas inválidas, CSV multil
 
 MIT. Os dados de exemplo são fictícios.
 
-
