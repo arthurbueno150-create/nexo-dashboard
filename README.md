@@ -36,7 +36,7 @@ No macOS ou Linux:
 .venv/bin/python app.py
 ```
 
-Com o servidor em execução, abra **http://127.0.0.1:3000** no mesmo computador. Esse endereço é local; para acessar pela internet ou compartilhar, use o [link público da dashboard](https://nexo-dashboard-w97q.onrender.com/). O servidor Waitress inicia sem modo de depuração. Para encerrar, pressione `Ctrl+C` no terminal. Para testar, use o Python desse mesmo ambiente:
+O servidor Waitress inicia sem modo de depuração. Para encerrar, pressione `Ctrl+C` no terminal. Para testar, use o Python desse mesmo ambiente:
 
 ```bash
 python -m unittest discover -s tests -v
