@@ -1,0 +1,19 @@
+# Public Python deployment. A single server process preserves session isolation.
+services:
+  - type: web
+    name: nexo-dashboard
+    runtime: python
+    plan: free
+    branch: main
+    buildCommand: pip install -r requirements.txt
+    startCommand: NEXO_ALLOWED_HOSTS="$RENDER_EXTERNAL_HOSTNAME,localhost,127.0.0.1" python app.py
+    healthCheckPath: /health
+    envVars:
+      - key: PYTHON_VERSION
+        value: "3.12.14"
+      - key: NEXO_HOST
+        value: "0.0.0.0"
+      - key: NEXO_SECURE_COOKIE
+        value: "1"
+      - key: NEXO_SECRET_KEY
+        generateValue: true
