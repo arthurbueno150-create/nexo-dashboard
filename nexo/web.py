@@ -13,7 +13,7 @@ from decimal import Decimal
 from pathlib import Path
 
 from flask import Flask, Request, Response, abort, g, redirect, render_template, request, session, url_for
-from werkzeug.exceptions import RequestEntityTooLarge
+from werkzeug.exceptions import RequestEntityTooLarge, SecurityError
 
 from .charts import chart_geometry
 from .engine import (Filters, Mapping, Rules, analyze, category_name, date_value, demo_book, detect_header, empty, export_csv, filter_rows, format_number, infer_mapping, number_value, prepare, sort_rows)
@@ -297,6 +297,11 @@ def create_app(test_config=None):
     @app.get("/health")
     def health():
         return {"status": "ok", "language": "Python", "version": "2.0.0"}
+
+    @app.errorhandler(SecurityError)
+    def invalid_host(_error):
+        # Host validation can fail before Flask creates its URL adapter.
+        return Response("Endereço de acesso não permitido.", status=400, content_type="text/plain; charset=utf-8")
 
     @app.errorhandler(RequestEntityTooLarge)
     def oversized(_error):
