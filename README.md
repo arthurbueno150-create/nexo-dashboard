@@ -2,7 +2,17 @@
 
 **Clareza em cada célula.** Um dashboard em Python que transforma planilhas de finanças, vendas, estoque e outros dados tabulares em indicadores, gráficos e tabelas exploráveis.
 
-## Executar
+## Acessar a dashboard online
+
+**[Abrir o Nexo Dashboard](https://nexo-dashboard-w97q.onrender.com/)**
+
+Acesse gratuitamente pelo navegador, sem instalar Python ou baixar o projeto. Explore os exemplos de finanças, vendas e estoque ou importe uma planilha em XLSX, XLS, CSV ou TSV para testar indicadores, gráficos, filtros e exportações.
+
+> A demonstração está hospedada no plano gratuito do Render. Após um período sem uso, o primeiro acesso pode levar cerca de um minuto para carregar. Aguarde a inicialização.
+
+Para experimentar, use a [planilha com dados fictícios](examples/nexo-dados-ficticios.xlsx). Os arquivos importados são processados no servidor e os dados ficam temporariamente na sua sessão; consulte [Dados e limites](#dados-e-limites).
+
+## Executar no seu computador
 
 Requer **Python 3.11 ou superior**. Não precisa de Node.js, TypeScript ou etapa de build.
 
@@ -26,7 +36,7 @@ No macOS ou Linux:
 .venv/bin/python app.py
 ```
 
-Abra **http://127.0.0.1:3000**. O servidor Waitress inicia sem modo de depuração. Para encerrar, pressione `Ctrl+C` no terminal. Para testar, use o Python desse mesmo ambiente:
+Com o servidor em execução, abra **http://127.0.0.1:3000** no mesmo computador. Esse endereço é local; para acessar pela internet ou compartilhar, use o [link público da dashboard](https://nexo-dashboard-w97q.onrender.com/). O servidor Waitress inicia sem modo de depuração. Para encerrar, pressione `Ctrl+C` no terminal. Para testar, use o Python desse mesmo ambiente:
 
 ```bash
 python -m unittest discover -s tests -v
