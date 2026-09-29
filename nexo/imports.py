@@ -11,10 +11,24 @@ from pathlib import Path
 from .engine import empty
 
 MAX_FILE = 15 * 1024 * 1024
-MAX_ROWS = 50_001
+# Inclui uma linha de cabeçalho além dos registros.
+MAX_ROWS = 100_001
 MAX_COLUMNS = 200
-MAX_SHEET_CELLS = 300_000
-MAX_BOOK_CELLS = 500_000
+MAX_SHEET_CELLS = 1_200_000
+MAX_BOOK_CELLS = 1_500_000
+IMPORT_TIMEOUT = 60
+
+
+def _limit_message():
+    def formatted(value):
+        return f"{value:,}".replace(",", ".")
+    return (f"Limite por aba: {formatted(MAX_ROWS - 1)} registros, "
+            f"{MAX_COLUMNS} colunas e {formatted(MAX_SHEET_CELLS)} células "
+            "(incluindo o cabeçalho).")
+
+
+def _book_limit_message():
+    return f"Limite de {MAX_BOOK_CELLS:,} células por arquivo.".replace(",", ".")
 
 
 def _value(value):
@@ -27,7 +41,7 @@ def _value(value):
 
 def _check(rows):
     if len(rows) > MAX_ROWS or any(len(row) > MAX_COLUMNS for row in rows) or sum(map(len, rows)) > MAX_SHEET_CELLS:
-        raise ValueError("Limite por aba: 50.000 registros, 200 colunas e 300.000 células.")
+        raise ValueError(_limit_message())
 
 
 def read_book(payload: bytes, filename: str) -> dict:
@@ -52,7 +66,7 @@ def read_book(payload: bytes, filename: str) -> dict:
                 rows.append(row)
                 cells += len(row)
                 if len(rows) > MAX_ROWS or len(row) > MAX_COLUMNS or cells > MAX_SHEET_CELLS:
-                    raise ValueError("A aba ultrapassa os limites de linhas, colunas ou células.")
+                    raise ValueError(_limit_message())
         except csv.Error as exc:
             raise ValueError("CSV inválido: confira o delimitador e o fechamento das aspas.") from exc
         sheets = [dict(name="Dados", data=rows)]
@@ -68,15 +82,17 @@ def read_book(payload: bytes, filename: str) -> dict:
                 for sheet in workbook:
                     # Formatação distante também pode aumentar a dimensão de uma aba.
                     if (sheet.max_row or 0) > MAX_ROWS or (sheet.max_column or 0) > MAX_COLUMNS or (sheet.max_row or 0) * (sheet.max_column or 0) > MAX_SHEET_CELLS:
-                        raise ValueError("Uma aba ultrapassa os limites. Remova linhas ou colunas distantes sem dados.")
+                        raise ValueError(_limit_message() + " Remova linhas ou colunas distantes sem dados.")
                     rows = []
+                    cells = 0
                     for row in sheet.iter_rows(values_only=True):
                         rows.append([_value(v) for v in row])
+                        cells += len(row)
                         total += len(row)
                         if total > MAX_BOOK_CELLS:
-                            raise ValueError("Limite de 500.000 células por arquivo.")
-                        if len(rows) > MAX_ROWS or len(row) > MAX_COLUMNS:
-                            raise ValueError("A aba ultrapassa os limites de leitura.")
+                            raise ValueError(_book_limit_message())
+                        if len(rows) > MAX_ROWS or len(row) > MAX_COLUMNS or cells > MAX_SHEET_CELLS:
+                            raise ValueError(_limit_message())
                     _check(rows)
                     sheets.append(dict(name=sheet.title, data=rows))
             finally:
@@ -91,10 +107,10 @@ def read_book(payload: bytes, filename: str) -> dict:
                 total = 0
                 for sheet in workbook.sheets():
                     if sheet.nrows > MAX_ROWS or sheet.ncols > MAX_COLUMNS or sheet.nrows * sheet.ncols > MAX_SHEET_CELLS:
-                        raise ValueError("Uma aba ultrapassa os limites de leitura.")
+                        raise ValueError(_limit_message())
                     total += sheet.nrows * sheet.ncols
                     if total > MAX_BOOK_CELLS:
-                        raise ValueError("Limite de 500.000 células por arquivo.")
+                        raise ValueError(_book_limit_message())
                     rows = []
                     for source in sheet.get_rows():
                         row = []
@@ -121,7 +137,7 @@ def read_book(payload: bytes, filename: str) -> dict:
     for sheet in sheets:
         _check(sheet["data"])
     if sum(len(row) for s in sheets for row in s["data"]) > MAX_BOOK_CELLS:
-        raise ValueError("Limite de 500.000 células por arquivo.")
+        raise ValueError(_book_limit_message())
     return dict(name=Path(filename.replace("\\", "/")).name[:180], demo=None, sheets=sheets)
 
 
@@ -140,7 +156,7 @@ def _worker(connection, payload, filename):
         connection.close()
 
 
-def import_book(payload: bytes, filename: str, timeout: float = 30) -> dict:
+def import_book(payload: bytes, filename: str, timeout: float = IMPORT_TIMEOUT) -> dict:
     """Interrompe o processo de leitura se ultrapassar o prazo."""
     if len(payload) > MAX_FILE:
         raise ValueError("O limite é de 15 MB por arquivo.")
@@ -151,7 +167,7 @@ def import_book(payload: bytes, filename: str, timeout: float = 30) -> dict:
     send.close()
     try:
         if not receive.poll(timeout):
-            raise ValueError("A leitura ultrapassou 30 segundos. Tente um arquivo menor.")
+            raise ValueError(f"A leitura ultrapassou {timeout:g} segundos. Tente um arquivo menor.")
         try:
             success, result = receive.recv()
         except EOFError as exc:
