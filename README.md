@@ -84,7 +84,7 @@ Os arquivos são enviados ao **servidor Python**. Ao executar localmente, esse s
 
 Dados e preferências ficam em memória, separados por sessão de navegador. São descartados ao encerrar a sessão ou o servidor. Sessões com mais de duas horas sem atividade são removidas na próxima requisição; a expiração não é uma garantia de eliminação física da memória. O cookie contém apenas um identificador assinado. Reiniciar o servidor também redefine as sessões.
 
-Limites: **15 MB por arquivo**, 50.000 registros, 200 colunas e 300.000 células por aba; 500.000 células por arquivo; até 16 sessões e 2 milhões de células importadas entre sessões. A leitura roda em processo separado e é interrompida após 30 segundos. Arquivos protegidos por senha, macros e formatos diferentes dos listados não são suportados. CSV exportado neutraliza textos que poderiam ser interpretados como fórmulas.
+Limites: **15 MB por arquivo**, 100.000 registros por aba (mais o cabeçalho), até 200 colunas, 1.200.000 células por aba e 1.500.000 células por arquivo; até 16 sessões e 2 milhões de células importadas entre sessões. A leitura roda em processo separado e é interrompida após 60 segundos. Os limites de células incluem cabeçalhos e células vazias dentro da tabela: 100.000 registros com 10 colunas cabem no limite por aba; tabelas mais largas podem atingir o limite de células antes do limite de registros. O formato XLS permite no máximo 65.536 linhas por aba; use XLSX, CSV ou TSV para mais linhas. Arquivos protegidos por senha, macros e formatos diferentes dos listados não são suportados. CSV exportado neutraliza textos que poderiam ser interpretados como fórmulas.
 
 ## Configuração e hospedagem
 
