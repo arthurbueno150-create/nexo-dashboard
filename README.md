@@ -12,6 +12,24 @@ Acesse gratuitamente pelo navegador, sem instalar Python ou baixar o projeto. Ex
 
 Para experimentar, use a [planilha com dados fictícios](examples/nexo-dados-ficticios.xlsx). Os arquivos importados são processados no servidor e os dados ficam temporariamente na sua sessão; consulte [Dados e limites](#dados-e-limites).
 
+## Arquivos grandes, sem plano pago
+
+**[Abrir o modo de arquivos grandes](https://nexo-dashboard-w97q.onrender.com/large)**
+
+O painel completo continua com seus gráficos e regras para arquivos de até 15 MB. O novo modo aceita uploads de até **250 MB**, enviados em partes de 4 MB, e lê os dados em processo separado para uma base SQLite temporária. A página mostra o andamento; não é necessário manter uma requisição aberta durante toda a leitura.
+
+- Formatos: **CSV, TSV, XLSX, XLSM, XLTX, XLTM, XLS, XLSB e ODS**.
+- Até **2 milhões de registros, 20 milhões de células e 50 abas por arquivo**, com até 200 colunas por aba. Linhas vazias são ignoradas.
+- Até 65.536 caracteres por célula, 1 MB de texto por linha, 768 MB de base temporária e 1 GB descompactado. Índices de textos compartilhados do Excel têm limite de 32 MB.
+- Seleção de abas, cabeçalho automático ou uma das primeiras 30 linhas, busca sem acentos, filtro por categoria exata, soma/média com Decimal, 50 linhas por página e exportação de **todos os registros filtrados** em CSV.
+- Um leitor por vez, por até **15 minutos**, e três espaços temporários compartilhados. Consultas têm prazo de 90 segundos. Arquivos complexos podem atingir os limites de recursos antes dos limites nominais.
+
+O upload original é apagado ao terminar a leitura. A base fica em **disco temporário no servidor**, isolada por sessão, por até 30 minutos sem atividade (limpeza verificada a cada 30 segundos). O botão Cancelar / descartar ou Encerrar sessão apaga os dados; reinícios e novas publicações também podem apagá-los. Se o envio cair, descarte o envio incompleto e reenvie. Um novo arquivo não apaga automaticamente as importações anteriores: descarte as que não precisa mais.
+
+O modo grande analisa **valores tabulares**: não reproduz formatação, imagens, gráficos ou macros do arquivo e não recalcula fórmulas. Arquivos com senha não são suportados. Datas no XLSB podem aparecer como números de série. XLS mantém o limite próprio de 65.536 linhas por aba. Formatos proprietários não listados precisam ser exportados para um formato aceito.
+
+Este modo amplia a capacidade sem contratar serviços. **Não significa tamanho ilimitado nem garantia para todo arquivo de 250 MB.** O Render gratuito possui recursos limitados e disco efêmero. Para arquivos que excedam a capacidade, divida em abas/arquivos menores ou execute o mesmo projeto gratuitamente no seu computador; os mesmos limites de proteção continuam aplicados. Referências: [Render Free](https://render.com/docs/free), [planos de computação](https://render.com/docs/compute-plans).
+
 ## Executar no seu computador
 
 Requer **Python 3.11 ou superior**. Não precisa de Node.js, TypeScript ou etapa de build.
@@ -80,7 +98,7 @@ As automações recalculam o painel quando você importa, filtra ou aplica regra
 
 ## Dados e limites
 
-Os arquivos são enviados ao **servidor Python**. Ao executar localmente, esse servidor está no seu computador. Em uma hospedagem, os dados chegam ao servidor de quem hospeda o aplicativo. Nenhuma planilha é enviada a APIs de terceiros, e não há armazenamento permanente dos uploads.
+No **painel completo (até 15 MB)**, os arquivos são enviados ao **servidor Python**. Ao executar localmente, esse servidor está no seu computador. Em uma hospedagem, os dados chegam ao servidor de quem hospeda o aplicativo. Nenhuma planilha é enviada a APIs de terceiros, e não há armazenamento permanente dos uploads.
 
 Dados e preferências ficam em memória, separados por sessão de navegador. São descartados ao encerrar a sessão ou o servidor. Sessões com mais de duas horas sem atividade são removidas na próxima requisição; a expiração não é uma garantia de eliminação física da memória. O cookie contém apenas um identificador assinado. Reiniciar o servidor também redefine as sessões.
 
@@ -108,6 +126,8 @@ nexo/engine.py         Detecção, limpeza e cálculo com Decimal
 nexo/imports.py        Leitura dos quatro formatos com limites
 nexo/charts.py         Geometria dos gráficos SVG
 nexo/web.py            Rotas, sessões, filtros e downloads
+nexo/large_data.py     Leitura incremental, SQLite e exportação em partes
+nexo/large_web.py      Uploads em partes, progresso e limpeza temporária
 templates/            Páginas Jinja
 static/               CSS, ícones e melhoria dos formulários
 tests/                Testes unitários e de integração

@@ -10,3 +10,4 @@ Jinja2==3.1.6
 MarkupSafe==3.0.3
 Werkzeug==3.1.8
 et_xmlfile==2.0.0
+pyxlsb==1.0.10

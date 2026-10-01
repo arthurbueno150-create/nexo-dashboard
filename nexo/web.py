@@ -90,7 +90,7 @@ def create_app(test_config=None):
             g.state = states[identifier]
             g.state.touched = now
         if request.method == "POST":
-            token = request.form.get("csrf", "")
+            token = request.headers.get("X-CSRF-Token") or request.form.get("csrf", "")
             if not hmac.compare_digest(token, g.state.csrf):
                 abort(400, "A sessão mudou. Recarregue a página e tente novamente.")
 
@@ -289,6 +289,7 @@ def create_app(test_config=None):
 
     @app.post("/clear")
     def clear():
+        app.extensions["large_manager"].clear_owner(session.get("sid"))
         with states_lock:
             states.pop(session.get("sid"), None)
         session.clear()
@@ -296,7 +297,7 @@ def create_app(test_config=None):
 
     @app.get("/health")
     def health():
-        return {"status": "ok", "language": "Python", "version": "2.0.0"}
+        return {"status": "ok", "language": "Python", "version": "2.1.0"}
 
     @app.errorhandler(SecurityError)
     def invalid_host(_error):
@@ -312,4 +313,6 @@ def create_app(test_config=None):
     def bad_request(error):
         return render_template("error.html", message=error.description), error.code
 
+    from .large_web import register
+    register(app)
     return app

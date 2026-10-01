@@ -1,0 +1,5 @@
+<!doctype html>
+<html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Arquivos grandes — Nexo</title><link rel="icon" href="{{ url_for('static', filename='favicon.svg') }}"><link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}"><link rel="stylesheet" href="{{ url_for('static', filename='large.css') }}"><script src="{{ url_for('static', filename='large.js') }}" defer></script></head>
+<body><div class="large-shell"><header class="large-nav"><a class="brand" href="{{ url_for('index') }}"><img src="{{ url_for('static',filename='favicon.svg') }}" alt="">nexo<b>.</b></a><nav><a href="{{ url_for('index') }}">Painel completo</a><a href="{{ url_for('large.index') }}" aria-current="page">Arquivos grandes</a></nav><span class="local-badge">Sem plano pago</span></header>
+<main id="large-main" data-csrf="{{ csrf }}">{% block content %}{% endblock %}</main>
+<footer class="large-footer">Clareza em cada célula. · Seus arquivos são temporários e separados por sessão.</footer></div></body></html>
